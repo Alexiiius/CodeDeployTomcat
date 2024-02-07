@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Obtener el endpoint de SSM
-ENDPOINT=$(aws ssm get-parameter --name "endpoint" --query "Parameter.Value" --output text)
+ENDPOINT=$(cat /tmp/endpoint.txt)
 
 # Probar el endpoint
 if curl -s --head  --request GET $ENDPOINT | grep "200 OK" > /dev/null; then

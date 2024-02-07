@@ -8,6 +8,5 @@ chmod +x gradlew
 END="hola2"
 mv build/libs/holamundo-0.0.1-plain.war build/libs/$END.war
 
-# Guardar el endpoint en SSM para validacion posterior en el script de validacion
-ENDPOINT="http://localhost:8080/$END"
-aws ssm put-parameter --name "endpoint" --value $ENDPOINT --type "String" --overwrite
+# Guardar el endpoint en un archivo temporal para validación posterior
+echo "http://localhost:8080/$END" > /tmp/endpoint.txt
