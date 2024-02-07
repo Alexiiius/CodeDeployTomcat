@@ -9,4 +9,5 @@ END="hola2"
 mv build/libs/holamundo-0.0.1-plain.war build/libs/$END.war
 
 # Guardar el endpoint en un archivo temporal para validación posterior
-echo "http://localhost:8080/$END" > /tmp/endpoint.txt
+IP=$(curl -s https://checkip.amazonaws.com)
+echo "http://$IP:8080/$END" > /tmp/endpoint.txt
