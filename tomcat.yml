@@ -107,7 +107,7 @@ Resources:
           # Actualizar todas las apps
           apt update -y
           # Instalar unzip
-          apt install unzip -y
+          apt install unzip
           # Instalación CodeDeploy Agent
           apt install ruby-full -y
           apt install wget -y
@@ -124,80 +124,54 @@ Resources:
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --configsets full_install --region ${AWS::Region}
           sleep 1
 
-          # Este script instala y configura Tomcat 10 en Ubuntu 20.04
-          # Se debe ejecutar con permisos de superusuario
-
-          # Salir en caso de error
-          #set -e
-
-          # Comprobar que se ejecuta como superusuario
-          echo "Actualizando sistema..."
-          apt update
+          #1. Instalacion tomcat
+          # Actualizar el sistema
+          apt update -y
           apt upgrade -y
 
-          # Instalar Java 17 Development Kit y Runtime Environment
-          echo "Instalando Java..."
+          # Instalar Java JDK
           apt install openjdk-17-jdk -y
           apt install openjdk-17-jre -y
 
-          java -version
+          # Crear usuario y grupo tomcat si no existen
+          if id "tomcat" >/dev/null 2>&1; then
+                  echo "Usuario tomcat ya existe"
+          else
+                  useradd -m -d /opt/tomcat -U -s /bin/false tomcat
+          fi
 
-          # Descargar Tomcat
-          echo "Descargando Tomcat 10..."
-          wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.18/bin/apache-tomcat-10.1.18.tar.gz -P /tmp
+          # Descargar Apache Tomcat
+          wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.18/bin/apache-tomcat-10.1.18.tar.gz
 
-          # Instalar tar
-          apt install tar -y
-
-          # Descomprimir Tomcat
-          echo "Descomprimiendo Tomcat..."
+          # Crear directorio de instalación
           mkdir -p /opt/tomcat
-          tar xf /tmp/apache-tomcat-10*.tar.gz -C /opt/tomcat --strip-components=1
 
-          # Crear grupo tomcat
-          echo "Creando grupo tomcat..."
-          if ! getent group tomcat > /dev/null 2>&1; then
-              groupadd tomcat
-          fi
+          # Descomprimir Apache Tomcat en el directorio de instalación
+          tar xzvf apache-tomcat-10.1.18.tar.gz -C /opt/tomcat --strip-components=1
 
-          # Crear usuario tomcat
-          echo "Creando usuario tomcat..."
-          if ! id -u tomcat > /dev/null 2>&1; then
-              useradd -m -s /bin/false -g tomcat -d /opt/tomcat tomcat
-          fi
-
-
-
-          # Configurar permisos
-          echo "Configurando permisos..."
-          cd /opt/tomcat
-          # Cambiar el propietario y grupo de todos los archivos y subdirectorios a tomcat
-          chown -R tomcat:tomcat /opt/tomcat/
-          # Permisos de lectura y ejecución para el grupo tomcat
-          chmod -R g+r conf
-          chmod g+x conf
+          # Cambiar propietario y permisos del directorio de instalación
+          chown -R tomcat:tomcat /opt/tomcat
           chmod -R u+x /opt/tomcat/bin
 
+
+          #2. Configuramos los usuarios administradores
           echo "Configurando usuarios administrativos..."
           # Buscar "</tomcat-users>" y añadir los usuarios administrativos. (el \ es para escapar el /)
           # El comando sed -i hace los cambios directamente en el archivo y no muestra la salida por pantalla
-              sed -i 's/<\/tomcat-users>/  <role rolename="manager-gui" \/>\n  <user username="manager" password="manager_password" roles="manager-gui" \/>\n  <role rolename="admin-gui" \/>\n  <user username="admin" password="admin_password" roles="manager-gui,admin-gui" \/>\n<\/tomcat-users>/' /opt/tomcat/conf/tomcat-users.xml
-
+          sed -i 's/<\/tomcat-users>/  <role rolename="manager-gui" \/>\n  <user username="manager" password="manager_password" roles="manager-gui" \/>\n  <role rolename="admin-gui" \/>\n  <user username="admin" password="admin_password" roles="manager-gui,admin-gui" \/>\n<\/tomcat-users>/' /opt/tomcat/conf/tomcat-users.xml
 
           echo "Configurando acceso a la página del Manager..."
-              sed -i '/<Valve/ s/^/<!-- /' /opt/tomcat/webapps/manager/META-INF/context.xml
-              sed -i '/:1|0:0:0:0:0:0:0:1" \/>/ s/$/ -->/' /opt/tomcat/webapps/manager/META-INF/context.xml
-
+          sed -i '/<Valve/ s/^/<!-- /' /opt/tomcat/webapps/manager/META-INF/context.xml
+          sed -i '/:1|0:0:0:0:0:0:0:1" \/>/ s/$/ -->/' /opt/tomcat/webapps/manager/META-INF/context.xml
 
           echo "Configurando acceso a la página del Host Manager..."
-              sed -i '/<Valve/ s/^/<!-- /' /opt/tomcat/webapps/host-manager/META-INF/context.xml
-              sed -i '/:1|0:0:0:0:0:0:0:1" \/>/ s/$/ -->/' /opt/tomcat/webapps/host-manager/META-INF/context.xml
+          sed -i '/<Valve/ s/^/<!-- /' /opt/tomcat/webapps/host-manager/META-INF/context.xml
+          sed -i '/:1|0:0:0:0:0:0:0:1" \/>/ s/$/ -->/' /opt/tomcat/webapps/host-manager/META-INF/context.xml
 
-          echo "Creando servicio..."
-          # Obtener la ruta de la instalación de Java
-          RUTA=$(sudo update-java-alternatives -l | grep '1.17.0' | awk '{print $3}')
 
-          cat > /etc/systemd/system/tomcat.service <<EOF
+          # 3. Creamos el system service
+          # Crear el archivo tomcat.service y añadir el contenido
+          sudo bash -c 'cat > /etc/systemd/system/tomcat.service' <<-'EOF'
           [Unit]
           Description=Tomcat
           After=network.target
@@ -208,7 +182,7 @@ Resources:
           User=tomcat
           Group=tomcat
 
-          Environment="JAVA_HOME=$RUTA"
+          Environment="JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64"
           Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom"
           Environment="CATALINA_BASE=/opt/tomcat"
           Environment="CATALINA_HOME=/opt/tomcat"
@@ -225,18 +199,26 @@ Resources:
           WantedBy=multi-user.target
           EOF
 
-          echo "Iniciando Tomcat..."
-          systemctl daemon-reload
-          systemctl start tomcat
-          systemctl --no-pager status tomcat
-          systemctl enable tomcat
+          #4. Configuramos el JAVA_HOME
+          # Obtener la ruta de instalación de Java 1.17.0
+          JAVA_PATH=$(sudo update-java-alternatives -l | grep '1.17.0' | awk '{print $3}')
 
-          echo "Configurando firewall..."
+          # Reemplazar JAVA_HOME en tomcat.service
+          sudo sed -i "s|JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64|JAVA_HOME=$JAVA_PATH|g" /etc/systemd/system/tomcat.service
+
+          # Recargar servicios systemd y habilitar Apache Tomcat
+          sudo systemctl daemon-reload
+          sudo systemctl start tomcat
+          sudo systemctl enable tomcat
+
+          #5. Configuramos el firewall
+          # Abre el firewall
           ufw allow 8080
 
           echo "Tomcat instalado correctamente"
           echo "Accede a la página del Manager a través del puerto 8080"
           echo "La contraseña para el usuario manager es manager_password por default y para el usuario admin es admin_password por default"
+          
           # Manda la señal de que la instancia está lista
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
       Tags:
