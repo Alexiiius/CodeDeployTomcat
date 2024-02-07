@@ -4,7 +4,7 @@
 ENDPOINT=$(cat /tmp/endpoint.txt)
 
 # Probar el endpoint
-if curl -s --head  --request GET $ENDPOINT | grep "200" > /dev/null; then
+if wget --spider -q "$ENDPOINT"; then
     echo "Endpoint is working"
     exit 0
 else
