@@ -22,7 +22,7 @@ jobs:
             
             - name: Lanzar Stack
               run: |
-                aws cloudformation create-stack --stack-name salami --template-body CodeployTomcat.yml
+                aws cloudformation create-stack --stack-name salami --template-body CodeployTomcat.yml --iam-capabilities CAPABILITY_IAM
             # - name: AWS CloudFormation "Deploy CloudFormation Stack"
             #   uses: aws-actions/aws-cloudformation-github-deploy@v1
             #   with:
