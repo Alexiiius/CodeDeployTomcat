@@ -2,7 +2,7 @@ name: Lanzar App En EC2
 
 on:
   workflow_run:
-    workflows: ["Java CI with Gradle"]
+    workflows: ["Lanzar stack"]
     types:
         - completed
 
