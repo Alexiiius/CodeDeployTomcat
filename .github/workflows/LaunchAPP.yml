@@ -27,7 +27,7 @@ jobs:
 
         - name: Lanzar CodeDeploy
           run: |
-            aws deploy create-deployment 
-            --application-name "LanzarAppJavaTomcat" 
-            --deployment-group-name "LanzarAppJavaTomcat" 
+            aws deploy create-deployment \
+            --application-name "LanzarAppJavaTomcat" \ 
+            --deployment-group-name "LanzarAppJavaTomcat" \ 
             --github-location repository=${{ github.repository }},commitId=${{ github.sha }}

@@ -16,7 +16,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-20.04
     permissions:
       contents: read
@@ -52,7 +51,6 @@ jobs:
       run: ./gradlew test
 
   dependency-submission:
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
