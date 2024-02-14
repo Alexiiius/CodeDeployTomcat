@@ -19,11 +19,15 @@ This repository contains a simple AWS CloudFormation stack that creates an Ubunt
 
 - `appspec.yml`: This is the CodeDeploy pipeline.
 
+- `CodeployTomcat`: This is the CloudFormation template that contains the same services like `tomcat.yml` but adding the creation of a CodeDeploy application and group using the stack name a a filter.
+
+- `launchApp.sh`: This script launch the applicacion defined at `CodeployTomcat` using this github repo as a source.
+
 ## Usage
 
 1. Make sure you have the AWS CLI installed and configured with a profile named 'default'.
 
-2. To deploy the stack, run the `deploy.sh` script:
+2. To deploy the stack inside `tomcat.yml` run the `deploy.sh` script after ensure that the aws command is targetting the yml:
 
     ```bash
     bash deployStack.sh
@@ -43,6 +47,15 @@ This repository contains a simple AWS CloudFormation stack that creates an Ubunt
 5. Wait until the application finish and check your endpoint.
 
     `Endpoint: /hola2`
+
+6. If you are using `CodeployTomcat` change your role credential inside CodeDeployDeploymentGroup service called `ServiceRoleArn`.
+   
+   To find your role credential go to your iam section in your aws account and copy your iam code that have privilegies to run CodeDeploy.
+
+8. Run `launchApp.sh` after the stack finish to run the CodeDeploy installation.
+   ```bash
+    bash launchApp.sh
+    ```
 
 Please note that the stack name 'Tomcat10' is hardcoded in the scripts. If you want to use a different stack name, you will need to modify the scripts accordingly.
 The endpoint is hardcored in the pipeline scripts.
