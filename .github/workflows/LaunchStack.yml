@@ -20,11 +20,8 @@ jobs:
                 aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
                 aws-region: "us-east-1"
             
-            - name: Lanzar Stack
-              run: |
-                aws cloudformation create-stack --stack-name salami --template-body CodeployTomcat.yml --capabilities CAPABILITY_IAM
-            # - name: AWS CloudFormation "Deploy CloudFormation Stack"
-            #   uses: aws-actions/aws-cloudformation-github-deploy@v1
-            #   with:
-            #     name: "create-aws-infra"
-            #     template: "infra.yml"
+            - name: Lanzar AWS CloudFormation
+              uses: aws-actions/aws-cloudformation-github-deploy@v1
+              with:
+                name: "esteponaLaMejorStack"
+                template: "CodeplotTomcat.yml"
