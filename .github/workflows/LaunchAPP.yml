@@ -25,17 +25,17 @@ jobs:
             aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
             aws-region: "us-east-1"
 
-        # - name: Lanzar CodeDeploy
-        #   run: |
-        #     aws deploy create-deployment \
-        #     --application-name "LanzarAppJavaTomcat" \
-        #     --deployment-group-name "LanzarAppJavaTomcat" \
-        #     --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
-        - name: AWS CodedePloy action
-          uses: aws-actions/aws-codedeploy-github-deploy@v1
-          with:
-            application_name: "LanzarAppJavaTomcat"
-            deployment_group_name: "LanzarAppJavaTomcat"
-            region: "us-east-1"
-            github_location: "repository=${{ github.repository }},commitId=${{ github.sha }}"
-            wait: true
+        - name: Lanzar CodeDeploy
+          run: |
+            aws deploy create-deployment \
+            --application-name "LanzarAppJavaTomcat" \
+            --deployment-group-name "LanzarAppJavaTomcat" \
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
+        # - name: AWS CodedePloy action
+        #   uses: aws-actions/aws-codedeploy-github-deploy@v1
+        #   with:
+        #     application_name: "LanzarAppJavaTomcat"
+        #     deployment_group_name: "LanzarAppJavaTomcat"
+        #     region: "us-east-1"
+        #     github_location: "repository=${{ github.repository }},commitId=${{ github.sha }}"
+        #     wait: true
