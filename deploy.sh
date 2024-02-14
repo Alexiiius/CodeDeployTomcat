@@ -8,7 +8,7 @@ then
 fi
 
 # Launch the CloudFormation stack
-aws cloudformation deploy --profile default --stack-name Tomcat10 --template-file tomcat.yml
+aws cloudformation deploy --profile default --stack-name Tomcat10 --template-file CodeployTomcat.yml
 
 if [ $? -eq 0 ]; then
     salami=$(aws cloudformation list-exports --query "Exports[?Name=='PublicIP'].Value" --output text)
