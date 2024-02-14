@@ -25,4 +25,3 @@ jobs:
               with:
                 name: "esteponaLaMejorStack"
                 template: "CodeployTomcat.yml"
-                role-arn: "arn:aws:iam::346734802127:role/LabRole"
